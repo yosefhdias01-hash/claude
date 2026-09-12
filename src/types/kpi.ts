@@ -21,4 +21,11 @@ export interface Kpi {
   unit: string;
   targetLabel: string;
   direction: KpiDirection;
+  /** Nilai target dalam satuan `valueUnit`, dipakai untuk hitung persentase & gap. */
+  targetValue: number;
+  /** Nilai tercapai bulan berjalan (mock — akan diisi dari fitur Isi Angka Manual). */
+  currentValue: number;
+  /** Satuan singkat untuk tampilan angka, mis. "%", "juta", "Rp", "MQL", "skor". */
+  valueUnit: string;
 }
+
