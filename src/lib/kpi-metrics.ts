@@ -22,6 +22,27 @@ export function computeAchievement(kpi: Kpi): KpiAchievement {
   return { percentage, gap: targetValue - currentValue };
 }
 
+export type KpiStatus = "tercapai" | "mendekati" | "dibawah";
+
+const STATUS_THRESHOLD = { tercapai: 100, mendekati: 80 } as const;
+
+export const KPI_STATUS_LABEL: Record<KpiStatus, string> = {
+  tercapai: "Tercapai",
+  mendekati: "Mendekati",
+  dibawah: "Di Bawah Target",
+};
+
+/**
+ * Status pencapaian berdasarkan persentase yang sudah membalik arah untuk
+ * KPI rendah=baik (lihat `computeAchievement`), sehingga ambang batas di
+ * bawah ini berlaku sama untuk kedua arah KPI.
+ */
+export function computeStatus(percentage: number): KpiStatus {
+  if (percentage >= STATUS_THRESHOLD.tercapai) return "tercapai";
+  if (percentage >= STATUS_THRESHOLD.mendekati) return "mendekati";
+  return "dibawah";
+}
+
 const numberFormatter = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 });
 
 export function formatKpiValue(value: number, valueUnit: string): string {
