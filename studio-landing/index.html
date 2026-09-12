@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amplo Studio — AI product studio</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#232427',
+          body: '#55575c',
+          accent: '#5B5FEF',
+          accentDeep: '#4338CA',
+          dark: '#171719',
+          darkCard: '#202024',
+        },
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+        },
+      },
+    },
+  };
+</script>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body {
+    background: #ECEDEE;
+    color: #232427;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+  h1, h2, h3 {
+    letter-spacing: -0.035em;
+  }
+  .font-serif-accent {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    letter-spacing: -0.01em;
+  }
+  .wchar {
+    display: inline-block;
+    font-variation-settings: 'wght' 600;
+    transition: font-variation-settings .15s linear;
+  }
+  [data-rise], [data-reveal] {
+    opacity: 0;
+    transform: translateY(1rem);
+    transition: opacity .7s cubic-bezier(.4,0,.2,1), transform .7s cubic-bezier(.4,0,.2,1);
+  }
+  [data-rise].is-visible, [data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #meshGL {
+    pointer-events: none;
+  }
+  [data-drift] {
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-drift], .wchar { transition: none !important; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<div class="max-w-[1440px] mx-auto px-3 sm:px-5 py-3 sm:py-5">
+  <div class="relative rounded-[28px] sm:rounded-[40px] bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset] overflow-hidden">
+
+    <!-- ============ NAV ============ -->
+    <header id="siteNav" class="sticky top-3 sm:top-5 z-50 mx-3 sm:mx-6 mt-3 sm:mt-6 rounded-2xl bg-white/80 backdrop-blur-md border border-black/5 transition-shadow duration-300">
+      <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+        <a href="#top" class="flex items-center gap-2.5" aria-label="Amplo Studio home">
+          <span class="relative inline-flex w-7 h-6" aria-hidden="true">
+            <span class="absolute left-0 top-0 w-5 h-5 rounded-full bg-[#171719]"></span>
+            <span class="absolute left-3.5 top-0 w-5 h-5 rounded-full bg-accent"></span>
+          </span>
+          <span class="text-[17px] font-semibold tracking-tight">Amplo</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8 text-[14.5px] font-medium text-body" aria-label="Primary">
+          <a href="#services" class="hover:text-ink transition-colors">Services</a>
+          <a href="#work" class="hover:text-ink transition-colors">Work</a>
+          <a href="#studio" class="hover:text-ink transition-colors">Studio</a>
+          <a href="#contact" class="hover:text-ink transition-colors">Contact</a>
+        </nav>
+
+        <div class="flex items-center gap-2">
+          <a href="#contact" class="hidden sm:inline-flex items-center gap-2 rounded-full bg-[#171719] text-white text-[14px] font-semibold px-4 py-2.5 hover:bg-black transition-colors">
+            Start a sprint
+            <i data-lucide="arrow-up-right" stroke-width="1.5" class="w-4 h-4"></i>
+          </a>
+          <button id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" class="md:hidden w-10 h-10 grid place-items-center rounded-full border border-black/10">
+            <i data-lucide="menu" stroke-width="1.5" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="hidden md:hidden border-t border-black/5 px-4 py-3 flex flex-col gap-3 text-sm font-medium text-body">
+        <a href="#services" class="py-1">Services</a>
+        <a href="#work" class="py-1">Work</a>
+        <a href="#studio" class="py-1">Studio</a>
+        <a href="#contact" class="py-1">Contact</a>
+      </div>
+    </header>
+
+    <!-- ============ HERO ============ -->
+    <section id="top" class="relative bg-[#F4F5F5] min-h-[100svh] flex flex-col overflow-hidden">
+
+      <!-- Layer 0: Three.js mesh -->
+      <canvas id="meshGL" class="absolute inset-0 w-full h-full opacity-70" aria-hidden="true"></canvas>
+
+      <!-- Layer 1: Bloom -->
+      <div id="bloom" class="pointer-events-none absolute -right-40 top-0 w-[720px] h-[720px] rounded-full blur-3xl transition-transform duration-500 ease-out"
+           style="background: radial-gradient(circle, rgba(91,95,239,0.45), transparent 70%);"></div>
+
+      <!-- Layer 2: Atmosphere -->
+      <div class="pointer-events-none absolute -left-32 bottom-0 w-[520px] h-[520px] rounded-full blur-3xl opacity-60"
+           style="background: radial-gradient(circle, rgba(35,36,39,0.06), transparent 70%);"></div>
+      <div class="pointer-events-none absolute left-1/3 -bottom-40 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
+           style="background: radial-gradient(circle, rgba(91,95,239,0.18), transparent 70%);"></div>
+
+      <!-- Layer 4: Hero content -->
+      <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-5 sm:px-10 pt-28 pb-24 text-center">
+        <span data-rise class="inline-flex items-center gap-2 rounded-full bg-white/70 border border-black/10 backdrop-blur px-3.5 py-1.5 text-[12.5px] font-semibold text-body mb-7">
+          <i data-lucide="sparkles" stroke-width="1.5" class="w-3.5 h-3.5 text-accent"></i>
+          AI product studio
+        </span>
+
+        <h1 data-rise class="relative max-w-4xl text-5xl sm:text-7xl lg:text-8xl font-semibold leading-[0.98]" data-wrap-chars>
+          <span class="block">We design and ship AI products</span>
+          <span class="block font-serif-accent font-normal not-italic-none mt-1">people actually use.</span>
+
+          <span class="hidden lg:flex absolute -right-6 top-4 -rotate-6 items-center gap-1.5 rounded-full bg-gradient-to-br from-accent to-accentDeep text-white text-[12px] font-semibold px-3.5 py-1.5 shadow-lg">
+            Booking Q1 2026
+          </span>
+        </h1>
+
+        <p data-rise class="max-w-xl mt-7 text-[16.5px] sm:text-lg text-body leading-relaxed">
+          Amplo pairs product strategists with AI engineers to take rough ideas to working software — usually inside a single sprint.
+        </p>
+
+        <div data-rise class="mt-9 flex flex-col sm:flex-row items-center gap-3">
+          <a href="#contact" class="inline-flex items-center gap-2 rounded-full bg-[#171719] text-white text-[15px] font-semibold px-6 py-3.5 hover:bg-black transition-colors">
+            Start a sprint
+            <i data-lucide="arrow-up-right" stroke-width="1.5" class="w-4 h-4"></i>
+          </a>
+          <a href="#work" class="inline-flex items-center gap-2 rounded-full border border-black/15 text-ink text-[15px] font-semibold px-6 py-3.5 hover:bg-black/5 transition-colors">
+            See our work
+            <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Layer 5: Floating drift tiles -->
+      <div data-drift data-drift-i="0" class="hidden sm:flex absolute left-[8%] top-[26%] w-40 rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.35)] p-3.5 -rotate-2">
+        <div class="w-full">
+          <div class="flex items-center gap-1.5 mb-2">
+            <span class="w-2 h-2 rounded-full bg-accent"></span>
+            <span class="h-1.5 w-16 rounded-full bg-black/10"></span>
+          </div>
+          <div class="h-1.5 w-full rounded-full bg-black/10 mb-1.5"></div>
+          <div class="h-1.5 w-3/4 rounded-full bg-black/10"></div>
+        </div>
+      </div>
+
+      <div data-drift data-drift-i="1" class="hidden sm:flex absolute right-[10%] top-[18%] w-36 rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.35)] p-3.5 rotate-3">
+        <div class="w-full flex items-end gap-1 h-12">
+          <div class="w-2 rounded-full bg-accent/70" style="height:40%"></div>
+          <div class="w-2 rounded-full bg-accent/70" style="height:70%"></div>
+          <div class="w-2 rounded-full bg-accent" style="height:100%"></div>
+          <div class="w-2 rounded-full bg-accent/50" style="height:55%"></div>
+        </div>
+      </div>
+
+      <div data-drift data-drift-i="2" class="hidden lg:flex absolute left-[14%] bottom-[16%] w-44 rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.35)] p-3.5 rotate-1">
+        <div class="w-full space-y-1.5">
+          <div class="h-1.5 w-full rounded-full bg-black/10"></div>
+          <div class="h-1.5 w-5/6 rounded-full bg-black/10"></div>
+          <div class="h-1.5 w-2/3 rounded-full bg-accent/60"></div>
+        </div>
+      </div>
+
+      <div class="absolute bottom-6 right-6 z-10 hidden sm:flex items-center gap-2.5 rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.35)] px-4 py-3">
+        <span class="w-8 h-8 rounded-full bg-accent/15 grid place-items-center">
+          <i data-lucide="eye" stroke-width="1.5" class="w-4 h-4 text-accent"></i>
+        </span>
+        <div class="text-left">
+          <p class="text-[12px] font-semibold leading-tight">Prototype preview</p>
+          <p class="text-[11px] text-body leading-tight">Interactive, not a mockup</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SERVICES ============ -->
+    <section id="services" class="px-5 sm:px-10 py-20 sm:py-28">
+      <div data-reveal class="max-w-2xl mx-auto text-center mb-14">
+        <p class="text-[13px] font-semibold text-accent uppercase tracking-wide mb-3">Services</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold">What we build inside a sprint</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+        <!-- items injected below -->
+        <article data-reveal class="rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-6 transition-transform duration-300 hover:-translate-y-1">
+          <span class="inline-grid place-items-center w-11 h-11 rounded-xl bg-accent/10 mb-5">
+            <i data-lucide="workflow" stroke-width="1.5" class="w-5 h-5 text-accent"></i>
+          </span>
+          <h3 class="text-lg font-semibold mb-2">AI workflow prototype</h3>
+          <p class="text-[14.5px] text-body leading-relaxed mb-5">A clickable, model-backed prototype of the workflow you're trying to automate.</p>
+          <span class="inline-block text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1">Ships in 2 weeks</span>
+        </article>
+
+        <article data-reveal class="rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-6 transition-transform duration-300 hover:-translate-y-1">
+          <span class="inline-grid place-items-center w-11 h-11 rounded-xl bg-accent/10 mb-5">
+            <i data-lucide="bot" stroke-width="1.5" class="w-5 h-5 text-accent"></i>
+          </span>
+          <h3 class="text-lg font-semibold mb-2">Internal copilot</h3>
+          <p class="text-[14.5px] text-body leading-relaxed mb-5">A copilot trained on your internal docs and tools, wired into your team's daily flow.</p>
+          <span class="inline-block text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1">Ships in 3 weeks</span>
+        </article>
+
+        <article data-reveal class="rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-6 transition-transform duration-300 hover:-translate-y-1">
+          <span class="inline-grid place-items-center w-11 h-11 rounded-xl bg-accent/10 mb-5">
+            <i data-lucide="layout-panel-left" stroke-width="1.5" class="w-5 h-5 text-accent"></i>
+          </span>
+          <h3 class="text-lg font-semibold mb-2">Customer-facing AI feature</h3>
+          <p class="text-[14.5px] text-body leading-relaxed mb-5">A production-ready feature your users can touch — not a demo that lives in a slide deck.</p>
+          <span class="inline-block text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1">Ships in 4 weeks</span>
+        </article>
+
+        <article data-reveal class="rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-6 transition-transform duration-300 hover:-translate-y-1">
+          <span class="inline-grid place-items-center w-11 h-11 rounded-xl bg-accent/10 mb-5">
+            <i data-lucide="git-branch" stroke-width="1.5" class="w-5 h-5 text-accent"></i>
+          </span>
+          <h3 class="text-lg font-semibold mb-2">Data pipeline automation</h3>
+          <p class="text-[14.5px] text-body leading-relaxed mb-5">Messy, manual data work turned into a pipeline your team never has to think about.</p>
+          <span class="inline-block text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1">Ships in 2 weeks</span>
+        </article>
+
+        <article data-reveal class="rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-6 transition-transform duration-300 hover:-translate-y-1">
+          <span class="inline-grid place-items-center w-11 h-11 rounded-xl bg-accent/10 mb-5">
+            <i data-lucide="bar-chart-3" stroke-width="1.5" class="w-5 h-5 text-accent"></i>
+          </span>
+          <h3 class="text-lg font-semibold mb-2">Analytics &amp; reporting layer</h3>
+          <p class="text-[14.5px] text-body leading-relaxed mb-5">A reporting layer that turns raw product data into decisions your leadership trusts.</p>
+          <span class="inline-block text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1">Ships in 3 weeks</span>
+        </article>
+
+        <article data-reveal class="rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-6 transition-transform duration-300 hover:-translate-y-1">
+          <span class="inline-grid place-items-center w-11 h-11 rounded-xl bg-accent/10 mb-5">
+            <i data-lucide="graduation-cap" stroke-width="1.5" class="w-5 h-5 text-accent"></i>
+          </span>
+          <h3 class="text-lg font-semibold mb-2">Team enablement sprint</h3>
+          <p class="text-[14.5px] text-body leading-relaxed mb-5">Hands-on sessions that leave your own engineers able to extend what we built.</p>
+          <span class="inline-block text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1">Ships in 1 week</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ PROOF ============ -->
+    <section class="px-5 sm:px-10 pb-20 sm:pb-28">
+      <div class="flex flex-col sm:flex-row items-center justify-center sm:-space-x-6 gap-4 sm:gap-0 max-w-4xl mx-auto">
+        <div data-reveal class="relative z-10 -rotate-1 rounded-full bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.3)] px-10 py-8 text-center">
+          <p class="text-4xl sm:text-5xl font-semibold text-[#2E3034]">11 <span class="text-accent">days</span></p>
+          <p class="text-[13px] text-body mt-1">average turnaround</p>
+        </div>
+        <div data-reveal class="relative z-20 rounded-full bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.3)] px-10 py-8 text-center">
+          <p class="text-4xl sm:text-5xl font-semibold text-[#2E3034]">54 <span class="text-accent">demos</span></p>
+          <p class="text-[13px] text-body mt-1">shipped to stakeholders</p>
+        </div>
+        <div data-reveal class="relative z-10 rotate-1 rounded-full bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.3)] px-10 py-8 text-center">
+          <p class="text-4xl sm:text-5xl font-semibold text-[#2E3034]">9 <span class="text-accent">systems</span></p>
+          <p class="text-[13px] text-body mt-1">running in production</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CAPABILITIES (dark) ============ -->
+    <section class="px-3 sm:px-5 pb-3 sm:pb-5">
+      <div class="rounded-[28px] sm:rounded-[36px] bg-dark text-white px-5 sm:px-10 py-16 sm:py-24">
+        <div data-reveal class="max-w-2xl mb-14">
+          <p class="text-[13px] font-semibold text-accent uppercase tracking-wide mb-3">Capabilities</p>
+          <h2 class="text-3xl sm:text-4xl font-semibold">What we bring to <span class="font-serif-accent font-normal">every sprint.</span></h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Card 1: stacking cards -->
+          <div data-reveal class="relative rounded-2xl bg-darkCard p-6 min-h-[280px] overflow-hidden">
+            <span class="absolute top-5 right-5 inline-flex items-center gap-1.5 rounded-full bg-white/10 text-[11.5px] font-semibold px-3 py-1.5">
+              <i data-lucide="calendar-check" stroke-width="1.5" class="w-3.5 h-3.5"></i>
+              Review day
+            </span>
+            <p class="text-[13px] text-white/60 mb-8">Design iteration</p>
+            <div class="relative h-40">
+              <div class="absolute left-1/2 top-4 -translate-x-1/2 w-32 h-20 rounded-xl bg-white/5 border border-white/10 rotate-6"></div>
+              <div class="absolute left-1/2 top-6 -translate-x-1/2 w-32 h-20 rounded-xl bg-white/10 border border-white/10 rotate-3"></div>
+              <div class="absolute left-1/2 top-8 -translate-x-1/2 w-32 h-20 rounded-xl bg-white/20 border border-white/10 -rotate-2"></div>
+              <div class="absolute left-1/2 top-10 -translate-x-1/2 w-32 h-20 rounded-xl bg-white/30 border border-white/10 -rotate-5"></div>
+              <div class="absolute left-1/2 top-12 -translate-x-1/2 w-32 h-20 rounded-xl bg-white text-dark grid place-items-center rotate-1 shadow-xl">
+                <i data-lucide="layout-template" stroke-width="1.5" class="w-6 h-6"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: bar chart -->
+          <div data-reveal class="rounded-2xl bg-darkCard p-6 min-h-[280px]">
+            <p class="text-[13px] text-white/60 mb-2">Sprint velocity</p>
+            <p class="text-2xl font-semibold mb-8">Shipped features / week</p>
+            <div class="flex items-end gap-2.5 h-32">
+              <div class="w-full rounded-full bg-white/15" style="height:35%"></div>
+              <div class="w-full rounded-full bg-white/25" style="height:55%"></div>
+              <div class="w-full rounded-full bg-white/40" style="height:40%"></div>
+              <div class="w-full rounded-full bg-accent" style="height:85%"></div>
+              <div class="w-full rounded-full bg-white/30" style="height:60%"></div>
+              <div class="w-full rounded-full bg-white/50" style="height:70%"></div>
+            </div>
+          </div>
+
+          <!-- Card 3: capability tags -->
+          <div data-reveal class="rounded-2xl bg-darkCard p-6 min-h-[280px] flex flex-col justify-between">
+            <div>
+              <p class="text-[13px] text-white/60 mb-2">Full-stack coverage</p>
+              <p class="text-2xl font-semibold">From prompt to production.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-8">
+              <span class="text-[12.5px] font-medium bg-white/10 rounded-full px-3 py-1.5">Prototyping</span>
+              <span class="text-[12.5px] font-medium bg-white/10 rounded-full px-3 py-1.5">LLM integration</span>
+              <span class="text-[12.5px] font-medium bg-white/10 rounded-full px-3 py-1.5">Data infra</span>
+              <span class="text-[12.5px] font-medium bg-white/10 rounded-full px-3 py-1.5">Design systems</span>
+              <span class="text-[12.5px] font-medium bg-white/10 rounded-full px-3 py-1.5">Evals</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WORK ============ -->
+    <section id="work" class="px-5 sm:px-10 py-20 sm:py-28">
+      <div data-reveal class="max-w-2xl mb-14">
+        <p class="text-[13px] font-semibold text-accent uppercase tracking-wide mb-3">Selected work</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold">Sprints that turned into <span class="font-serif-accent font-normal">shipped systems.</span></h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-16">
+        <div data-reveal class="lg:col-span-3 flex flex-col justify-center">
+          <span class="text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1 w-fit mb-5">Fintech · Underwriting</span>
+          <h3 class="text-2xl sm:text-3xl font-semibold mb-4">A copilot that reads loan files so underwriters don't have to.</h3>
+          <p class="text-[15px] text-body leading-relaxed max-w-lg">We shipped a document-reasoning assistant that cut manual review time by more than half, live in production within four weeks of kickoff.</p>
+        </div>
+        <div data-reveal class="lg:col-span-2 relative rounded-2xl min-h-[280px] bg-gradient-to-br from-accent/15 to-accentDeep/10 p-6">
+          <div class="absolute inset-6 rounded-xl bg-white shadow-lg p-4 rotate-1">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-accent"></span>
+              <span class="h-1.5 w-24 rounded-full bg-black/10"></span>
+            </div>
+            <div class="space-y-2">
+              <div class="h-2 w-full rounded-full bg-black/10"></div>
+              <div class="h-2 w-5/6 rounded-full bg-black/10"></div>
+              <div class="h-10 w-full rounded-lg bg-accent/10 mt-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div data-reveal class="lg:col-span-3 flex flex-col justify-center order-2 lg:order-1">
+          <span class="text-[12.5px] font-semibold text-body bg-black/5 rounded-full px-3 py-1 w-fit mb-5">Support · Internal tools</span>
+          <h3 class="text-2xl sm:text-3xl font-semibold mb-4">Triage assistant that routes tickets before a human sees them.</h3>
+          <p class="text-[15px] text-body leading-relaxed max-w-lg">A lightweight internal tool now classifies and routes over 2,000 support tickets a week, built and adopted inside a two-week sprint.</p>
+        </div>
+        <div data-reveal class="lg:col-span-2 relative rounded-2xl min-h-[280px] bg-gradient-to-br from-[#232427]/10 to-accent/10 p-6 order-1 lg:order-2">
+          <div class="absolute inset-6 rounded-xl bg-white shadow-lg p-4 rotate-1">
+            <div class="flex gap-2 mb-3">
+              <span class="text-[11px] font-semibold bg-accent/10 text-accent rounded-full px-2.5 py-1">Urgent</span>
+              <span class="text-[11px] font-semibold bg-black/5 rounded-full px-2.5 py-1">Billing</span>
+            </div>
+            <div class="space-y-2">
+              <div class="h-2 w-full rounded-full bg-black/10"></div>
+              <div class="h-2 w-2/3 rounded-full bg-black/10"></div>
+              <div class="h-8 w-1/2 rounded-lg bg-black/5 mt-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PACKAGES ============ -->
+    <section class="px-5 sm:px-10 py-20 sm:py-28 bg-[#F4F5F5]">
+      <div data-reveal class="max-w-2xl mx-auto text-center mb-16">
+        <p class="text-[13px] font-semibold text-accent uppercase tracking-wide mb-3">Packages</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold">Pick the shape of your sprint</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto items-center">
+        <div data-reveal class="-rotate-1 rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-7">
+          <h3 class="text-lg font-semibold mb-1">Prototype</h3>
+          <p class="text-[13px] text-body mb-5">Validate an idea fast</p>
+          <p class="text-3xl font-semibold mb-6">From $9k</p>
+          <ul class="space-y-2.5 text-[14px] text-body mb-7">
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>One workflow, one week</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Clickable, model-backed demo</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Findings readout</li>
+          </ul>
+          <a href="#contact" class="block text-center rounded-full border border-black/15 font-semibold text-[14.5px] py-3 hover:bg-black/5 transition-colors">Get started</a>
+        </div>
+
+        <div data-reveal class="relative z-10 scale-100 lg:scale-[1.04] rounded-2xl bg-dark text-white p-8 shadow-[0_24px_60px_-15px_rgba(23,23,25,0.7)]">
+          <span class="inline-block text-[11.5px] font-semibold bg-white/10 rounded-full px-3 py-1 mb-4">Most popular</span>
+          <h3 class="text-xl font-semibold mb-1">Studio Sprint</h3>
+          <p class="text-[13px] text-white/60 mb-5">Ship a real product</p>
+          <p class="text-4xl font-semibold mb-6">From $24k</p>
+          <ul class="space-y-2.5 text-[14px] text-white/70 mb-7">
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Production-ready feature</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Dedicated pod of 3</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Handoff &amp; enablement</li>
+          </ul>
+          <a href="#contact" class="block text-center rounded-full bg-white text-dark font-semibold text-[14.5px] py-3 hover:bg-white/90 transition-colors">Start a sprint</a>
+        </div>
+
+        <div data-reveal class="rotate-1 rounded-2xl bg-white shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_30px_-18px_rgba(35,36,39,0.25)] p-7">
+          <h3 class="text-lg font-semibold mb-1">Partner OS</h3>
+          <p class="text-[13px] text-body mb-5">Ongoing product partner</p>
+          <p class="text-3xl font-semibold mb-6">Custom</p>
+          <ul class="space-y-2.5 text-[14px] text-body mb-7">
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Monthly sprint cadence</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Embedded in your roadmap</li>
+            <li class="flex items-center gap-2"><i data-lucide="check" stroke-width="1.5" class="w-4 h-4 text-accent"></i>Priority support</li>
+          </ul>
+          <a href="#contact" class="block text-center rounded-full border border-black/15 font-semibold text-[14.5px] py-3 hover:bg-black/5 transition-colors">Talk to us</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STUDIO ============ -->
+    <section id="studio" class="px-5 sm:px-10 py-20 sm:py-28">
+      <div data-reveal class="max-w-2xl mb-14">
+        <p class="text-[13px] font-semibold text-accent uppercase tracking-wide mb-3">Studio</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold">A small studio, built for <span class="font-serif-accent font-normal">momentum.</span></h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div data-reveal class="relative rounded-2xl overflow-hidden min-h-[440px] bg-gradient-to-br from-accent to-accentDeep">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+          <div class="absolute bottom-6 left-6 right-6 text-white">
+            <p class="text-[13px] text-white/70 mb-1">Where we build</p>
+            <p class="text-xl font-semibold">A studio in the middle of the work, not above it.</p>
+          </div>
+        </div>
+
+        <div data-reveal class="relative rounded-2xl overflow-hidden min-h-[440px] bg-[#D8D9DB]">
+          <div class="absolute inset-0" style="background: repeating-linear-gradient(135deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 14px); filter: grayscale(1);"></div>
+          <div class="absolute bottom-6 left-6 right-6 text-ink">
+            <p class="text-[13px] text-body mb-1">Who we are</p>
+            <p class="text-xl font-semibold">Twelve builders, one studio.</p>
+          </div>
+        </div>
+
+        <div data-reveal class="rounded-2xl min-h-[440px] bg-dark text-white p-8 flex flex-col justify-between">
+          <div>
+            <p class="text-[13px] text-white/60 mb-3">Our take</p>
+            <p class="text-xl sm:text-2xl font-semibold leading-snug">We think most AI features die in a slide deck. We'd rather ship the smallest real version and learn from there.</p>
+          </div>
+          <div>
+            <p class="text-[13px] text-white/60 mb-1">Say hello</p>
+            <a href="mailto:hello@amplo.studio" class="text-lg font-semibold hover:underline">hello@amplo.studio</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FOOTER CTA ============ -->
+    <section id="contact" class="px-5 sm:px-10 pb-16 sm:pb-20">
+      <div data-reveal class="max-w-3xl">
+        <h2 class="text-3xl sm:text-5xl font-semibold leading-tight mb-8">
+          Tell us what's slowing your team down.
+          <span class="block font-serif-accent font-normal mt-1">We'll help you ship it.</span>
+        </h2>
+
+        <form class="flex flex-col sm:flex-row gap-3 max-w-md" onsubmit="event.preventDefault(); this.reset(); this.querySelector('[data-sent]').classList.remove('hidden');">
+          <label for="email" class="sr-only">Work email</label>
+          <input id="email" type="email" required placeholder="you@company.com"
+                 class="flex-1 rounded-full border border-black/15 px-5 py-3.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-accent/40" />
+          <button type="submit" class="rounded-full bg-[#171719] text-white font-semibold text-[15px] px-6 py-3.5 hover:bg-black transition-colors">
+            Get in touch
+          </button>
+        </form>
+        <p data-sent class="hidden mt-3 text-[13.5px] text-accentDeep font-medium">Thanks — we'll be in touch shortly.</p>
+      </div>
+    </section>
+
+    <footer class="px-5 sm:px-10 py-8 border-t border-black/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-body">
+        <a href="#services" class="hover:text-ink">Services</a>
+        <a href="#work" class="hover:text-ink">Work</a>
+        <a href="#studio" class="hover:text-ink">Studio</a>
+        <a href="#contact" class="hover:text-ink">Contact</a>
+        <a href="#" class="hover:text-ink">Privacy</a>
+      </div>
+      <p class="text-xs text-body">© 2026 Amplo Studio</p>
+    </footer>
+
+  </div>
+</div>
+
+<script>
+  // ---------- Lucide icons at exactly 1.5 stroke width ----------
+  lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+
+  // ---------- Mobile menu ----------
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuBtn.addEventListener('click', () => {
+    const isHidden = mobileMenu.classList.toggle('hidden');
+    menuBtn.setAttribute('aria-expanded', String(!isHidden));
+  });
+
+  // ---------- Nav shadow on scroll ----------
+  const nav = document.getElementById('siteNav');
+  function updateNavShadow() {
+    if (window.scrollY > 24) {
+      nav.classList.add('shadow-[0_10px_30px_-15px_rgba(35,36,39,0.25)]');
+    } else {
+      nav.classList.remove('shadow-[0_10px_30px_-15px_rgba(35,36,39,0.25)]');
+    }
+  }
+  window.addEventListener('scroll', updateNavShadow, { passive: true });
+  updateNavShadow();
+
+  // ---------- Scroll reveal (data-reveal / data-rise) ----------
+  const revealTargets = document.querySelectorAll('[data-reveal], [data-rise]');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  revealTargets.forEach((el) => revealObserver.observe(el));
+
+  // ---------- Variable font weight ("wchar") on pointer proximity ----------
+  function wrapChars(node) {
+    // Wrap each character of direct text nodes within `node` in a .wchar span,
+    // recursing into element children so nested markup (e.g. the serif accent line) is preserved.
+    node.childNodes.forEach((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        const frag = document.createDocumentFragment();
+        [...child.textContent].forEach((ch) => {
+          if (ch === ' ') {
+            frag.appendChild(document.createTextNode(' '));
+          } else {
+            const span = document.createElement('span');
+            span.className = 'wchar';
+            span.textContent = ch;
+            frag.appendChild(span);
+          }
+        });
+        child.replaceWith(frag);
+      } else if (child.nodeType === Node.ELEMENT_NODE && !child.hasAttribute('data-no-wrap')) {
+        wrapChars(child);
+      }
+    });
+  }
+
+  document.querySelectorAll('[data-wrap-chars]').forEach(wrapChars);
+  document.querySelectorAll('h2').forEach((h2) => {
+    if (!h2.closest('[data-wrap-chars]')) wrapChars(h2);
+  });
+
+  const allWChars = () => document.querySelectorAll('.wchar');
+  let wcharRects = [];
+  function recalcWCharRects() {
+    wcharRects = [...allWChars()].map((el) => {
+      const r = el.getBoundingClientRect();
+      return { el, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+    });
+  }
+  window.addEventListener('resize', recalcWCharRects);
+  window.addEventListener('load', recalcWCharRects);
+  setTimeout(recalcWCharRects, 300);
+
+  window.addEventListener('pointermove', (e) => {
+    for (const { el, cx, cy } of wcharRects) {
+      const d = Math.hypot(e.clientX - cx, e.clientY - cy);
+      const weight = d < 200 ? 600 + (1 - d / 200) * 300 : 600;
+      el.style.fontVariationSettings = `'wght' ${weight}`;
+    }
+  }, { passive: true });
+
+  // ---------- Bloom parallax ----------
+  const heroSection = document.getElementById('top');
+  const bloom = document.getElementById('bloom');
+  heroSection.addEventListener('pointermove', (e) => {
+    const rect = heroSection.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    bloom.style.transform = `translate(${px * 30}px, ${py * 30}px)`;
+  });
+
+  // ---------- Hero drift tiles ----------
+  const driftEls = [...document.querySelectorAll('[data-drift]')];
+  function animateDrift(t) {
+    driftEls.forEach((el) => {
+      const i = Number(el.dataset.driftI || 0);
+      const y = Math.sin(t / 1000 + i * 2) * 6;
+      el.style.transform = `translateY(${y}px)`;
+    });
+    requestAnimationFrame(animateDrift);
+  }
+  requestAnimationFrame(animateDrift);
+
+  // ---------- Three.js faceted mesh ----------
+  (function initMesh() {
+    const canvas = document.getElementById('meshGL');
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 0, 12);
+
+    const geometry = new THREE.IcosahedronGeometry(3, 0);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x5B5FEF,
+      roughness: 0.3,
+      metalness: 0.6,
+      flatShading: true,
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    dirLight.position.set(4, 6, 8);
+    scene.add(dirLight);
+    const fillLight = new THREE.DirectionalLight(0x5B5FEF, 0.4);
+    fillLight.position.set(-6, -3, 4);
+    scene.add(fillLight);
+
+    function layout() {
+      const rect = canvas.getBoundingClientRect();
+      renderer.setSize(rect.width, rect.height, false);
+      camera.aspect = rect.width / rect.height;
+      camera.updateProjectionMatrix();
+      mesh.position.x = window.innerWidth >= 1024 ? 4.5 : 0;
+    }
+    layout();
+    window.addEventListener('resize', layout);
+
+    function tick(t) {
+      const seconds = t / 1000;
+      mesh.rotation.x = seconds * 0.08;
+      mesh.rotation.y = seconds * 0.12;
+      mesh.position.y = Math.sin(seconds * 1.2) * 0.3;
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+</script>
+</body>
+</html>
