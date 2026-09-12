@@ -1,12 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import type { Kpi, KpiDirection } from "@/types/kpi";
 import type { CurrentUser } from "@/types/user";
 import { canFillKpi } from "@/lib/access";
+import { useKpiEntries } from "@/contexts/kpi-entries-context";
+import { latestEntryValue } from "@/lib/kpi-entries";
 import {
   KPI_DIRECTION_ARROW,
   KPI_DIRECTION_LABEL,
   KPI_STATUS_LABEL,
-  computeAchievement,
+  computeAchievementForValue,
   computeStatus,
   formatGap,
   formatKpiValue,
@@ -26,7 +30,9 @@ const STATUS_BADGE_CLASS: Record<KpiStatus, string> = {
 };
 
 export function KpiCard({ kpi, currentUser }: { kpi: Kpi; currentUser: CurrentUser }) {
-  const { percentage, gap } = computeAchievement(kpi);
+  const entries = useKpiEntries(kpi);
+  const currentValue = latestEntryValue(kpi, entries);
+  const { percentage, gap } = computeAchievementForValue(currentValue, kpi);
   const status = computeStatus(percentage);
   const canFill = canFillKpi(currentUser, kpi);
 
@@ -49,7 +55,7 @@ export function KpiCard({ kpi, currentUser }: { kpi: Kpi; currentUser: CurrentUs
         <div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">Tercapai</p>
           <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            {formatKpiValue(kpi.currentValue, kpi.valueUnit)}
+            {formatKpiValue(currentValue, kpi.valueUnit)}
           </p>
         </div>
         <div className="text-right">

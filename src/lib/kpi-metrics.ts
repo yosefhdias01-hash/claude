@@ -32,11 +32,23 @@ export function achievementPercentage(value: number, targetValue: number, direct
   return value === 0 ? 100 : (targetValue / value) * 100;
 }
 
-export function computeAchievement(kpi: Kpi): KpiAchievement {
-  const { targetValue, currentValue, direction } = kpi;
-  const percentage = achievementPercentage(currentValue, targetValue, direction);
-  const gap = direction === "tinggi-baik" ? currentValue - targetValue : targetValue - currentValue;
+/**
+ * Pencapaian (persentase & gap) sebuah nilai terhadap target KPI. Dipisah
+ * dari `computeAchievement` supaya bisa dipakai dengan nilai tercapai
+ * terkini dari entri (lihat `latestEntryValue`), bukan cuma `kpi.currentValue`.
+ */
+export function computeAchievementForValue(
+  value: number,
+  kpi: Pick<Kpi, "targetValue" | "direction">,
+): KpiAchievement {
+  const { targetValue, direction } = kpi;
+  const percentage = achievementPercentage(value, targetValue, direction);
+  const gap = direction === "tinggi-baik" ? value - targetValue : targetValue - value;
   return { percentage, gap };
+}
+
+export function computeAchievement(kpi: Kpi): KpiAchievement {
+  return computeAchievementForValue(kpi.currentValue, kpi);
 }
 
 export type KpiStatus = "tercapai" | "mendekati" | "dibawah";
@@ -70,14 +82,19 @@ export interface DepartmentSummary {
  * Agregat ringkasan satu departemen dari daftar KPI yang sudah difilter
  * (mis. oleh filter periode/departemen global). Menerima array KPI apa pun
  * sehingga sumbernya bisa diganti begitu filter global benar-benar mengubah
- * data yang tampil, tanpa mengubah cara agregat ini dihitung.
+ * data yang tampil, tanpa mengubah cara agregat ini dihitung. `resolveCurrentValue`
+ * dipakai untuk mengambil nilai tercapai terkini dari entri (bukan cuma
+ * `kpi.currentValue`), sehingga agregat ikut ter-propagasi saat ada entri baru.
  */
-export function computeDepartmentSummary(kpisInDepartment: Kpi[]): DepartmentSummary {
+export function computeDepartmentSummary(
+  kpisInDepartment: Kpi[],
+  resolveCurrentValue: (kpi: Kpi) => number = (kpi) => kpi.currentValue,
+): DepartmentSummary {
   const counts: Record<KpiStatus, number> = { tercapai: 0, mendekati: 0, dibawah: 0 };
   let totalPercentage = 0;
 
   for (const kpi of kpisInDepartment) {
-    const { percentage } = computeAchievement(kpi);
+    const { percentage } = computeAchievementForValue(resolveCurrentValue(kpi), kpi);
     counts[computeStatus(percentage)] += 1;
     totalPercentage += percentage;
   }

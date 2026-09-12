@@ -1,7 +1,11 @@
+"use client";
+
 import type { Department } from "@/types/kpi";
 import type { CurrentUser } from "@/types/user";
 import { kpisByDepartment, rolesByDepartment } from "@/lib/kpi-data";
 import { computeDepartmentSummary } from "@/lib/kpi-metrics";
+import { latestEntryValue } from "@/lib/kpi-entries";
+import { useKpiEntriesGetter } from "@/contexts/kpi-entries-context";
 import { DepartmentSummary } from "@/components/dashboard/department-summary";
 import { RoleSection } from "@/components/dashboard/role-section";
 import { TrendChart } from "@/components/dashboard/trend-chart";
@@ -13,9 +17,10 @@ export function DepartmentSection({
   department: Department;
   currentUser: CurrentUser;
 }) {
+  const getEntries = useKpiEntriesGetter();
   const departmentRoles = rolesByDepartment(department.id);
   const departmentKpis = kpisByDepartment(department.id);
-  const summary = computeDepartmentSummary(departmentKpis);
+  const summary = computeDepartmentSummary(departmentKpis, (kpi) => latestEntryValue(kpi, getEntries(kpi)));
 
   return (
     <section className="flex flex-col gap-4">
