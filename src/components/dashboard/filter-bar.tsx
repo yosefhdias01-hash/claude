@@ -2,11 +2,13 @@
 
 import { departments } from "@/lib/kpi-data";
 import { usePeriodFilter } from "@/contexts/period-filter-context";
+import { useDepartmentFilter, type DepartmentFilterValue } from "@/contexts/department-filter-context";
 import { formatPeriodRange } from "@/lib/period";
 import type { PeriodMode } from "@/lib/period";
 
 export function FilterBar() {
   const { mode, setMode, customRange, setCustomRange, range } = usePeriodFilter();
+  const { selectedDepartmentId, setSelectedDepartmentId, locked } = useDepartmentFilter();
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -64,8 +66,10 @@ export function FilterBar() {
           </label>
           <select
             id="filter-departemen"
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
-            defaultValue="semua"
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
+            value={selectedDepartmentId}
+            disabled={locked}
+            onChange={(event) => setSelectedDepartmentId(event.target.value as DepartmentFilterValue)}
           >
             <option value="semua">Semua Departemen</option>
             {departments.map((department) => (
@@ -74,6 +78,9 @@ export function FilterBar() {
               </option>
             ))}
           </select>
+          {locked && (
+            <p className="text-[11px] text-zinc-400">Terkunci ke departemen Anda.</p>
+          )}
         </div>
       </div>
 
