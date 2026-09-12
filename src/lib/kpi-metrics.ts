@@ -20,16 +20,23 @@ export interface KpiAchievement {
   gap: number;
 }
 
+/**
+ * Persentase pencapaian sebuah nilai (bukan cuma `currentValue`) terhadap
+ * target, membalik arah untuk KPI rendah=baik. Dipakai bersama oleh
+ * ringkasan target (nilai saat ini) dan tren historis (nilai per titik).
+ */
+export function achievementPercentage(value: number, targetValue: number, direction: KpiDirection): number {
+  if (direction === "tinggi-baik") {
+    return targetValue === 0 ? 0 : (value / targetValue) * 100;
+  }
+  return value === 0 ? 100 : (targetValue / value) * 100;
+}
+
 export function computeAchievement(kpi: Kpi): KpiAchievement {
   const { targetValue, currentValue, direction } = kpi;
-
-  if (direction === "tinggi-baik") {
-    const percentage = targetValue === 0 ? 0 : (currentValue / targetValue) * 100;
-    return { percentage, gap: currentValue - targetValue };
-  }
-
-  const percentage = currentValue === 0 ? 100 : (targetValue / currentValue) * 100;
-  return { percentage, gap: targetValue - currentValue };
+  const percentage = achievementPercentage(currentValue, targetValue, direction);
+  const gap = direction === "tinggi-baik" ? currentValue - targetValue : targetValue - currentValue;
+  return { percentage, gap };
 }
 
 export type KpiStatus = "tercapai" | "mendekati" | "dibawah";
