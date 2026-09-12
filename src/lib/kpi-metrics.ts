@@ -53,6 +53,36 @@ export function computeStatus(percentage: number): KpiStatus {
   return "dibawah";
 }
 
+export interface DepartmentSummary {
+  totalKpis: number;
+  averagePercentage: number;
+  counts: Record<KpiStatus, number>;
+}
+
+/**
+ * Agregat ringkasan satu departemen dari daftar KPI yang sudah difilter
+ * (mis. oleh filter periode/departemen global). Menerima array KPI apa pun
+ * sehingga sumbernya bisa diganti begitu filter global benar-benar mengubah
+ * data yang tampil, tanpa mengubah cara agregat ini dihitung.
+ */
+export function computeDepartmentSummary(kpisInDepartment: Kpi[]): DepartmentSummary {
+  const counts: Record<KpiStatus, number> = { tercapai: 0, mendekati: 0, dibawah: 0 };
+  let totalPercentage = 0;
+
+  for (const kpi of kpisInDepartment) {
+    const { percentage } = computeAchievement(kpi);
+    counts[computeStatus(percentage)] += 1;
+    totalPercentage += percentage;
+  }
+
+  const totalKpis = kpisInDepartment.length;
+  return {
+    totalKpis,
+    averagePercentage: totalKpis === 0 ? 0 : totalPercentage / totalKpis,
+    counts,
+  };
+}
+
 const numberFormatter = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 });
 
 export function formatKpiValue(value: number, valueUnit: string): string {
