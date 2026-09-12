@@ -1,6 +1,5 @@
 import { departments } from "@/lib/kpi-data";
-import { FilterBar } from "@/components/dashboard/filter-bar";
-import { DepartmentSection } from "@/components/dashboard/department-section";
+import { DashboardView } from "@/components/dashboard/dashboard-view";
 
 export default function DashboardPage() {
   return (
@@ -12,13 +11,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <FilterBar />
-
-      <main className="flex flex-col gap-10">
-        {departments.map((department) => (
-          <DepartmentSection key={department.id} department={department} />
-        ))}
-      </main>
+      <DashboardView departments={departments} />
     </div>
   );
 }
