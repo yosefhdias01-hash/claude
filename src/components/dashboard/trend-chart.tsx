@@ -20,6 +20,7 @@ import {
   weeklyTrend,
   type TrendPoint,
 } from "@/lib/mock-trend";
+import { useKpiEntries, useKpiEntriesGetter } from "@/contexts/kpi-entries-context";
 
 type Granularity = "mingguan" | "bulanan";
 
@@ -77,9 +78,10 @@ function ExtremeDot({
 }
 
 function SingleKpiChart({ kpi, granularity }: { kpi: Kpi; granularity: Granularity }) {
+  const entries = useKpiEntries(kpi);
   const data = useMemo(
-    () => (granularity === "mingguan" ? weeklyTrend(kpi) : monthlyTrend(kpi)),
-    [kpi, granularity],
+    () => (granularity === "mingguan" ? weeklyTrend(entries) : monthlyTrend(entries)),
+    [entries, granularity],
   );
 
   const extremes = useMemo(() => {
@@ -123,11 +125,15 @@ function SingleKpiChart({ kpi, granularity }: { kpi: Kpi; granularity: Granulari
 }
 
 function CompareKpiChart({ kpis, granularity }: { kpis: Kpi[]; granularity: Granularity }) {
+  const getEntries = useKpiEntriesGetter();
   const data = useMemo(() => {
     if (kpis.length === 0) return [];
-    const seriesByKpi = kpis.map((kpi) =>
-      granularity === "mingguan" ? weeklyAchievementTrend(kpi) : monthlyAchievementTrend(kpi),
-    );
+    const seriesByKpi = kpis.map((kpi) => {
+      const entries = getEntries(kpi);
+      return granularity === "mingguan"
+        ? weeklyAchievementTrend(entries, kpi)
+        : monthlyAchievementTrend(entries, kpi);
+    });
     const [firstSeries] = seriesByKpi;
     return firstSeries.map((point, index) => {
       const row: Record<string, number | string> = { label: point.label };
@@ -136,7 +142,7 @@ function CompareKpiChart({ kpis, granularity }: { kpis: Kpi[]; granularity: Gran
       });
       return row;
     });
-  }, [kpis, granularity]);
+  }, [kpis, granularity, getEntries]);
 
   return (
     <div className="h-64 w-full">

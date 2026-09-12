@@ -1,5 +1,4 @@
-import type { Kpi } from "@/types/kpi";
-import { entriesForKpi } from "@/lib/mock-entries";
+import type { Kpi, KpiEntry } from "@/types/kpi";
 import { aggregateMonthly, aggregateWeekly, type TrendPoint } from "@/lib/kpi-aggregation";
 import { achievementPercentage } from "@/lib/kpi-metrics";
 
@@ -8,12 +7,12 @@ export type { TrendPoint };
 const WEEKS_SHOWN = 8;
 const MONTHS_SHOWN = 6;
 
-export function weeklyTrend(kpi: Kpi): TrendPoint[] {
-  return aggregateWeekly(entriesForKpi(kpi), WEEKS_SHOWN);
+export function weeklyTrend(entries: KpiEntry[]): TrendPoint[] {
+  return aggregateWeekly(entries, WEEKS_SHOWN);
 }
 
-export function monthlyTrend(kpi: Kpi): TrendPoint[] {
-  return aggregateMonthly(entriesForKpi(kpi), MONTHS_SHOWN);
+export function monthlyTrend(entries: KpiEntry[]): TrendPoint[] {
+  return aggregateMonthly(entries, MONTHS_SHOWN);
 }
 
 /**
@@ -28,10 +27,10 @@ function toAchievementTrend(points: TrendPoint[], kpi: Kpi): TrendPoint[] {
   }));
 }
 
-export function weeklyAchievementTrend(kpi: Kpi): TrendPoint[] {
-  return toAchievementTrend(weeklyTrend(kpi), kpi);
+export function weeklyAchievementTrend(entries: KpiEntry[], kpi: Kpi): TrendPoint[] {
+  return toAchievementTrend(weeklyTrend(entries), kpi);
 }
 
-export function monthlyAchievementTrend(kpi: Kpi): TrendPoint[] {
-  return toAchievementTrend(monthlyTrend(kpi), kpi);
+export function monthlyAchievementTrend(entries: KpiEntry[], kpi: Kpi): TrendPoint[] {
+  return toAchievementTrend(monthlyTrend(entries), kpi);
 }
