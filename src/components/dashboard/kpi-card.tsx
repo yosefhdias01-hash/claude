@@ -1,5 +1,7 @@
-import type { Kpi } from "@/types/kpi";
+import type { Kpi, KpiDirection } from "@/types/kpi";
 import {
+  KPI_DIRECTION_ARROW,
+  KPI_DIRECTION_LABEL,
   KPI_STATUS_LABEL,
   computeAchievement,
   computeStatus,
@@ -8,6 +10,11 @@ import {
   formatPercentage,
   type KpiStatus,
 } from "@/lib/kpi-metrics";
+
+const DIRECTION_TEXT_CLASS: Record<KpiDirection, string> = {
+  "tinggi-baik": "text-emerald-600 dark:text-emerald-400",
+  "rendah-baik": "text-sky-600 dark:text-sky-400",
+};
 
 const STATUS_BADGE_CLASS: Record<KpiStatus, string> = {
   tercapai: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
@@ -29,6 +36,9 @@ export function KpiCard({ kpi }: { kpi: Kpi }) {
           </span>
         </div>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">Target: {kpi.targetLabel}</p>
+        <p className={`text-xs font-medium ${DIRECTION_TEXT_CLASS[kpi.direction]}`}>
+          {KPI_DIRECTION_ARROW[kpi.direction]} {KPI_DIRECTION_LABEL[kpi.direction]}
+        </p>
       </div>
 
       <div className="flex items-end justify-between">

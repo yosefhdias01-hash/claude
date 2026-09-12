@@ -1,4 +1,14 @@
-import type { Kpi } from "@/types/kpi";
+import type { Kpi, KpiDirection } from "@/types/kpi";
+
+export const KPI_DIRECTION_LABEL: Record<KpiDirection, string> = {
+  "tinggi-baik": "Tinggi = baik",
+  "rendah-baik": "Rendah = baik",
+};
+
+export const KPI_DIRECTION_ARROW: Record<KpiDirection, string> = {
+  "tinggi-baik": "▲",
+  "rendah-baik": "▼",
+};
 
 export interface KpiAchievement {
   /** Persentase pencapaian terhadap target, sudah memperhatikan arah KPI. */
