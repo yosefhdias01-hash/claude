@@ -38,8 +38,16 @@ export interface KpiEntry {
   id: string;
   kpiId: string;
   value: number;
-  /** Tanggal pencatatan, format ISO "YYYY-MM-DD". */
+  /** Tanggal periode data, format ISO "YYYY-MM-DD" (mis. tanggal capaian dilaporkan). */
   recordedAt: string;
   note?: string;
+  /**
+   * Audit trail (§7.4 PRD, wajib untuk setiap perubahan): siapa yang
+   * membuat/mengubah entri ini dan kapan aksi itu terjadi — berbeda dari
+   * `recordedAt` yang merupakan tanggal periode datanya.
+   */
+  changedBy: string;
+  /** Waktu perubahan, ISO 8601 timestamp. */
+  changedAt: string;
 }
 

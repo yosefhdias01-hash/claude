@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import type { Kpi } from "@/types/kpi";
 import { useAddKpiEntry } from "@/contexts/kpi-entries-context";
+import { useCurrentUser } from "@/contexts/current-user-context";
 import { MOCK_ENTRIES_REFERENCE_DATE } from "@/lib/mock-entries";
 import { formatKpiValue } from "@/lib/kpi-metrics";
 import {
@@ -14,6 +15,7 @@ import {
 
 export function IsiAngkaForm({ kpi }: { kpi: Kpi }) {
   const addEntry = useAddKpiEntry();
+  const { currentUser } = useCurrentUser();
   const [values, setValues] = useState<IsiAngkaFormValues>({
     value: "",
     recordedAt: MOCK_ENTRIES_REFERENCE_DATE,
@@ -34,6 +36,7 @@ export function IsiAngkaForm({ kpi }: { kpi: Kpi }) {
       value: numericValue,
       recordedAt: values.recordedAt,
       note: values.note.trim() || undefined,
+      changedBy: currentUser.name,
     });
 
     setLastSaved({ value: numericValue, recordedAt: values.recordedAt });

@@ -8,7 +8,7 @@ type EntriesByKpi = Record<string, KpiEntry[]>;
 
 interface KpiEntriesStore {
   getEntries: (kpi: Kpi) => KpiEntry[];
-  addEntry: (kpi: Kpi, entry: Pick<KpiEntry, "value" | "recordedAt" | "note">) => void;
+  addEntry: (kpi: Kpi, entry: Pick<KpiEntry, "value" | "recordedAt" | "note" | "changedBy">) => void;
 }
 
 const KpiEntriesContext = createContext<KpiEntriesStore | null>(null);
@@ -28,17 +28,21 @@ export function KpiEntriesProvider({ children }: { children: ReactNode }) {
     [entriesByKpi],
   );
 
-  const addEntry = useCallback((kpi: Kpi, entry: Pick<KpiEntry, "value" | "recordedAt" | "note">) => {
-    setEntriesByKpi((current) => {
-      const existing = current[kpi.id] ?? entriesForKpi(kpi);
-      const newEntry: KpiEntry = {
-        id: `${kpi.id}-${entry.recordedAt}-${existing.length}`,
-        kpiId: kpi.id,
-        ...entry,
-      };
-      return { ...current, [kpi.id]: [...existing, newEntry] };
-    });
-  }, []);
+  const addEntry = useCallback(
+    (kpi: Kpi, entry: Pick<KpiEntry, "value" | "recordedAt" | "note" | "changedBy">) => {
+      setEntriesByKpi((current) => {
+        const existing = current[kpi.id] ?? entriesForKpi(kpi);
+        const newEntry: KpiEntry = {
+          id: `${kpi.id}-${entry.recordedAt}-${existing.length}`,
+          kpiId: kpi.id,
+          changedAt: new Date().toISOString(),
+          ...entry,
+        };
+        return { ...current, [kpi.id]: [...existing, newEntry] };
+      });
+    },
+    [],
+  );
 
   const store = useMemo(() => ({ getEntries, addEntry }), [getEntries, addEntry]);
 

@@ -35,6 +35,8 @@ export function entriesForKpi(kpi: Kpi): KpiEntry[] {
       kpiId: kpi.id,
       value,
       recordedAt: toIsoDate(date),
+      changedBy: "Data awal (impor Spreadsheet)",
+      changedAt: `${toIsoDate(date)}T00:00:00.000Z`,
     });
   }
 

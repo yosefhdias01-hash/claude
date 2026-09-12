@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import type { Department } from "@/types/kpi";
 import { getVisibleDepartments } from "@/lib/access";
-import { defaultMockUser } from "@/lib/mock-users";
+import { useCurrentUser } from "@/contexts/current-user-context";
 import { DepartmentSection } from "@/components/dashboard/department-section";
 import { FilterBar } from "@/components/dashboard/filter-bar";
 import { RoleSwitcher } from "@/components/dashboard/role-switcher";
 
 export function DashboardView({ departments }: { departments: Department[] }) {
-  const [currentUser, setCurrentUser] = useState(defaultMockUser);
+  const { currentUser, setCurrentUser } = useCurrentUser();
   const visibleDepartments = getVisibleDepartments(currentUser, departments);
 
   return (
