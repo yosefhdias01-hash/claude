@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { KpiEntriesProvider } from "@/contexts/kpi-entries-context";
 import { CurrentUserProvider } from "@/contexts/current-user-context";
+import { PeriodFilterProvider } from "@/contexts/period-filter-context";
 
 export const metadata: Metadata = {
   title: "Dashboard KPI Divisi",
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="id" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <CurrentUserProvider>
-          <KpiEntriesProvider>{children}</KpiEntriesProvider>
+          <PeriodFilterProvider>
+            <KpiEntriesProvider>{children}</KpiEntriesProvider>
+          </PeriodFilterProvider>
         </CurrentUserProvider>
       </body>
     </html>
