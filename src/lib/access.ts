@@ -1,5 +1,4 @@
 import type { Department, Kpi } from "@/types/kpi";
-import { kpiDepartmentId } from "@/lib/kpi-data";
 import type { CurrentUser } from "@/types/user";
 
 /**
@@ -12,10 +11,13 @@ export function getVisibleDepartments(user: CurrentUser, departments: Department
 }
 
 /**
- * Peran berhak mengisi angka KPI (§7.4 PRD): superadmin, atau anggota dari
- * departemen yang sama dengan KPI tersebut.
+ * Peran berhak mengisi angka KPI (§7.4 & §3 PRD: "Anggota tim (per role)"):
+ * superadmin boleh mengisi KPI apa pun; anggota hanya boleh mengisi KPI
+ * milik role-nya sendiri, bukan sekadar departemen yang sama — anggota
+ * Paid Ads Specialist tidak otomatis berhak mengisi KPI Social Media
+ * Specialist meski satu departemen.
  */
 export function canFillKpi(user: CurrentUser, kpi: Kpi): boolean {
   if (user.role === "superadmin") return true;
-  return user.departmentId === kpiDepartmentId(kpi);
+  return user.roleId === kpi.roleId;
 }

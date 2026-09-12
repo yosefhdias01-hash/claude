@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { kpiById } from "@/lib/kpi-data";
-import { IsiAngkaForm } from "@/components/dashboard/isi-angka-form";
-import { EntryHistory } from "@/components/dashboard/entry-history";
+import { IsiAngkaAccessGate } from "@/components/dashboard/isi-angka-access-gate";
 
 export default async function IsiAngkaPage({ params }: { params: Promise<{ kpiId: string }> }) {
   const { kpiId } = await params;
@@ -17,8 +16,7 @@ export default async function IsiAngkaPage({ params }: { params: Promise<{ kpiId
       </Link>
       <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Isi Angka: {kpi.name}</h1>
       <p className="text-sm text-zinc-500 dark:text-zinc-400">Target: {kpi.targetLabel}</p>
-      <IsiAngkaForm kpi={kpi} />
-      <EntryHistory kpi={kpi} />
+      <IsiAngkaAccessGate kpi={kpi} />
     </div>
   );
 }
