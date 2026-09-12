@@ -20,7 +20,7 @@ import {
   weeklyTrend,
   type TrendPoint,
 } from "@/lib/mock-trend";
-import { useKpiEntries, useKpiEntriesGetter } from "@/contexts/kpi-entries-context";
+import { useEndBoundedKpiEntries, useEndBoundedKpiEntriesGetter } from "@/contexts/kpi-entries-context";
 
 type Granularity = "mingguan" | "bulanan";
 
@@ -78,7 +78,7 @@ function ExtremeDot({
 }
 
 function SingleKpiChart({ kpi, granularity }: { kpi: Kpi; granularity: Granularity }) {
-  const entries = useKpiEntries(kpi);
+  const entries = useEndBoundedKpiEntries(kpi);
   const data = useMemo(
     () => (granularity === "mingguan" ? weeklyTrend(entries) : monthlyTrend(entries)),
     [entries, granularity],
@@ -125,7 +125,7 @@ function SingleKpiChart({ kpi, granularity }: { kpi: Kpi; granularity: Granulari
 }
 
 function CompareKpiChart({ kpis, granularity }: { kpis: Kpi[]; granularity: Granularity }) {
-  const getEntries = useKpiEntriesGetter();
+  const getEntries = useEndBoundedKpiEntriesGetter();
   const data = useMemo(() => {
     if (kpis.length === 0) return [];
     const seriesByKpi = kpis.map((kpi) => {

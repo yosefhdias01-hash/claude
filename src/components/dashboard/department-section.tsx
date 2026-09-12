@@ -5,7 +5,7 @@ import type { CurrentUser } from "@/types/user";
 import { kpisByDepartment, rolesByDepartment } from "@/lib/kpi-data";
 import { computeDepartmentSummary } from "@/lib/kpi-metrics";
 import { latestEntryValue } from "@/lib/kpi-entries";
-import { useKpiEntriesGetter } from "@/contexts/kpi-entries-context";
+import { useFilteredKpiEntriesGetter } from "@/contexts/kpi-entries-context";
 import { DepartmentSummary } from "@/components/dashboard/department-summary";
 import { RoleSection } from "@/components/dashboard/role-section";
 import { TrendChart } from "@/components/dashboard/trend-chart";
@@ -17,7 +17,7 @@ export function DepartmentSection({
   department: Department;
   currentUser: CurrentUser;
 }) {
-  const getEntries = useKpiEntriesGetter();
+  const getEntries = useFilteredKpiEntriesGetter();
   const departmentRoles = rolesByDepartment(department.id);
   const departmentKpis = kpisByDepartment(department.id);
   const summary = computeDepartmentSummary(departmentKpis, (kpi) => latestEntryValue(kpi, getEntries(kpi)));

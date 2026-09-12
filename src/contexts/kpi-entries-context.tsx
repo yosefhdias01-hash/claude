@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { Kpi, KpiEntry } from "@/types/kpi";
 import { entriesForKpi } from "@/lib/mock-entries";
+import { filterEntriesByRange, filterEntriesUpTo } from "@/lib/kpi-entries";
+import { usePeriodFilter } from "@/contexts/period-filter-context";
 
 type EntriesByKpi = Record<string, KpiEntry[]>;
 
@@ -68,4 +70,45 @@ export function useAddKpiEntry() {
 /** Untuk komponen yang butuh entri beberapa KPI sekaligus (mis. mode perbandingan). */
 export function useKpiEntriesGetter(): (kpi: Kpi) => KpiEntry[] {
   return useKpiEntriesStore().getEntries;
+}
+
+/**
+ * Entri satu KPI yang disaring KE DUA batas rentang filter periode aktif
+ * (§7.5 PRD). Dipakai kartu Ringkasan Target Bulanan & agregat departemen,
+ * yang memang harus mencerminkan capaian PADA periode itu saja. Halaman
+ * Isi Angka (riwayat perubahan) sengaja tetap memakai `useKpiEntries`
+ * mentah karena audit trail tidak ikut disaring oleh filter dashboard.
+ */
+export function useFilteredKpiEntries(kpi: Kpi): KpiEntry[] {
+  const entries = useKpiEntries(kpi);
+  const { range } = usePeriodFilter();
+  return useMemo(() => filterEntriesByRange(entries, range), [entries, range]);
+}
+
+/** Versi `useFilteredKpiEntries` untuk beberapa KPI sekaligus (dipakai Ringkasan departemen). */
+export function useFilteredKpiEntriesGetter(): (kpi: Kpi) => KpiEntry[] {
+  const getEntries = useKpiEntriesGetter();
+  const { range } = usePeriodFilter();
+  return useCallback((kpi: Kpi) => filterEntriesByRange(getEntries(kpi), range), [getEntries, range]);
+}
+
+/**
+ * Entri sampai akhir rentang filter periode aktif (batas atas saja).
+ * Dipakai grafik tren: filter periode menggeser titik "per tanggal ini"
+ * (mis. "Bulan Lalu" → tren mingguan/bulanan sampai akhir bulan lalu),
+ * bukan mempersempit jadi cuma rentang periode itu sendiri — kalau
+ * disaring ke dua batas, grafik jadi nyaris kosong untuk periode
+ * sesempit "Bulan Ini".
+ */
+export function useEndBoundedKpiEntries(kpi: Kpi): KpiEntry[] {
+  const entries = useKpiEntries(kpi);
+  const { range } = usePeriodFilter();
+  return useMemo(() => filterEntriesUpTo(entries, range.end), [entries, range.end]);
+}
+
+/** Versi `useEndBoundedKpiEntries` untuk beberapa KPI sekaligus (dipakai mode perbandingan grafik). */
+export function useEndBoundedKpiEntriesGetter(): (kpi: Kpi) => KpiEntry[] {
+  const getEntries = useKpiEntriesGetter();
+  const { range } = usePeriodFilter();
+  return useCallback((kpi: Kpi) => filterEntriesUpTo(getEntries(kpi), range.end), [getEntries, range.end]);
 }

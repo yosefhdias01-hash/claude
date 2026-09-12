@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Kpi, KpiDirection } from "@/types/kpi";
 import type { CurrentUser } from "@/types/user";
 import { canFillKpi } from "@/lib/access";
-import { useKpiEntries } from "@/contexts/kpi-entries-context";
+import { useFilteredKpiEntries } from "@/contexts/kpi-entries-context";
 import { latestEntryValue } from "@/lib/kpi-entries";
 import {
   KPI_DIRECTION_ARROW,
@@ -30,7 +30,7 @@ const STATUS_BADGE_CLASS: Record<KpiStatus, string> = {
 };
 
 export function KpiCard({ kpi, currentUser }: { kpi: Kpi; currentUser: CurrentUser }) {
-  const entries = useKpiEntries(kpi);
+  const entries = useFilteredKpiEntries(kpi);
   const currentValue = latestEntryValue(kpi, entries);
   const { percentage, gap } = computeAchievementForValue(currentValue, kpi);
   const status = computeStatus(percentage);
