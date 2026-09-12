@@ -57,3 +57,15 @@ export function kpisByDepartment(departmentId: DepartmentId): Kpi[] {
   const departmentRoleIds = new Set(rolesByDepartment(departmentId).map((role) => role.id));
   return kpis.filter((kpi) => departmentRoleIds.has(kpi.roleId));
 }
+
+export function roleById(roleId: string): Role | undefined {
+  return roles.find((role) => role.id === roleId);
+}
+
+export function kpiDepartmentId(kpi: Kpi): DepartmentId | undefined {
+  return roleById(kpi.roleId)?.departmentId;
+}
+
+export function kpiById(kpiId: string): Kpi | undefined {
+  return kpis.find((kpi) => kpi.id === kpiId);
+}

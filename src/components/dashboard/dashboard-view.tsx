@@ -20,7 +20,7 @@ export function DashboardView({ departments }: { departments: Department[] }) {
       <main className="flex flex-col gap-10">
         {visibleDepartments.length > 0 ? (
           visibleDepartments.map((department) => (
-            <DepartmentSection key={department.id} department={department} />
+            <DepartmentSection key={department.id} department={department} currentUser={currentUser} />
           ))
         ) : (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">

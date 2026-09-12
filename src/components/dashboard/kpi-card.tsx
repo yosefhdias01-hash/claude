@@ -1,4 +1,7 @@
+import Link from "next/link";
 import type { Kpi, KpiDirection } from "@/types/kpi";
+import type { CurrentUser } from "@/types/user";
+import { canFillKpi } from "@/lib/access";
 import {
   KPI_DIRECTION_ARROW,
   KPI_DIRECTION_LABEL,
@@ -22,9 +25,10 @@ const STATUS_BADGE_CLASS: Record<KpiStatus, string> = {
   dibawah: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
 };
 
-export function KpiCard({ kpi }: { kpi: Kpi }) {
+export function KpiCard({ kpi, currentUser }: { kpi: Kpi; currentUser: CurrentUser }) {
   const { percentage, gap } = computeAchievement(kpi);
   const status = computeStatus(percentage);
+  const canFill = canFillKpi(currentUser, kpi);
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -59,6 +63,15 @@ export function KpiCard({ kpi }: { kpi: Kpi }) {
       <p className="text-xs text-zinc-500 dark:text-zinc-400">
         Gap ke target: <span className="font-medium">{formatGap(gap, kpi.valueUnit)}</span>
       </p>
+
+      {canFill && (
+        <Link
+          href={`/isi-angka/${kpi.id}`}
+          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-center text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+        >
+          Isi Angka
+        </Link>
+      )}
     </div>
   );
 }

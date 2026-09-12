@@ -1,10 +1,17 @@
 import type { Department } from "@/types/kpi";
+import type { CurrentUser } from "@/types/user";
 import { kpisByDepartment, rolesByDepartment } from "@/lib/kpi-data";
 import { computeDepartmentSummary } from "@/lib/kpi-metrics";
 import { DepartmentSummary } from "@/components/dashboard/department-summary";
 import { RoleSection } from "@/components/dashboard/role-section";
 
-export function DepartmentSection({ department }: { department: Department }) {
+export function DepartmentSection({
+  department,
+  currentUser,
+}: {
+  department: Department;
+  currentUser: CurrentUser;
+}) {
   const departmentRoles = rolesByDepartment(department.id);
   const summary = computeDepartmentSummary(kpisByDepartment(department.id));
 
@@ -14,7 +21,7 @@ export function DepartmentSection({ department }: { department: Department }) {
       <DepartmentSummary summary={summary} />
       <div className="flex flex-col gap-6">
         {departmentRoles.map((role) => (
-          <RoleSection key={role.id} role={role} />
+          <RoleSection key={role.id} role={role} currentUser={currentUser} />
         ))}
       </div>
     </section>

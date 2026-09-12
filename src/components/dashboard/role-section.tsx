@@ -1,8 +1,9 @@
 import type { Role } from "@/types/kpi";
+import type { CurrentUser } from "@/types/user";
 import { kpisByRole } from "@/lib/kpi-data";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 
-export function RoleSection({ role }: { role: Role }) {
+export function RoleSection({ role, currentUser }: { role: Role; currentUser: CurrentUser }) {
   const roleKpis = kpisByRole(role.id);
 
   return (
@@ -18,7 +19,7 @@ export function RoleSection({ role }: { role: Role }) {
       {roleKpis.length > 0 ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {roleKpis.map((kpi) => (
-            <KpiCard key={kpi.id} kpi={kpi} />
+            <KpiCard key={kpi.id} kpi={kpi} currentUser={currentUser} />
           ))}
         </div>
       ) : (
