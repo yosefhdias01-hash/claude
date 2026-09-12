@@ -29,3 +29,17 @@ export interface Kpi {
   valueUnit: string;
 }
 
+/**
+ * Satu entri nilai KPI pada tanggal tertentu — bentuk data yang nantinya
+ * disimpan oleh fitur Isi Angka Manual (§7.4 PRD). Entri bisa dicatat
+ * harian atau mingguan tergantung kadensi KPI-nya.
+ */
+export interface KpiEntry {
+  id: string;
+  kpiId: string;
+  value: number;
+  /** Tanggal pencatatan, format ISO "YYYY-MM-DD". */
+  recordedAt: string;
+  note?: string;
+}
+
