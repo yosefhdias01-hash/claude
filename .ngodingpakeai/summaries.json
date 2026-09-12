@@ -1,0 +1,134 @@
+{
+  ".claude/settings.local.json": {
+    "summary": "Konfigurasi lokal Claude Code untuk repo ini (izin/permission tool). File konfigurasi harness, bukan bagian dari aplikasi Next.js."
+  },
+  ".claude/skills/ngodingpakeai/SKILL.md": {
+    "summary": "Skill terpasang untuk agent yang berisi alur kerja NgodingPakeAI: connect/sync codebase, dan loop task next/start/complete untuk mengerjakan backlog plan secara bertahap."
+  },
+  ".gitignore": {
+    "summary": "Daftar pola file/folder yang diabaikan git untuk project Next.js standar (node_modules, .next, env files, dll)."
+  },
+  ".ngodingpakeaiignore": {
+    "summary": "Daftar tambahan path yang dikecualikan dari sync NgodingPakeAI di luar default (node_modules, build output, .env selalu diblokir CLI)."
+  },
+  "AGENTS.md": {
+    "summary": "Dokumen instruksi untuk AI agent: alur sync codebase ke NgodingPakeAI (connect, sync --plan, tulis summaries.json, sync) dan alur pengerjaan task satu-per-satu lewat task next/start/complete untuk plan Dashboard KPI Divisi."
+  },
+  "README.md": {
+    "summary": "README bawaan create-next-app: cara menjalankan dev server, struktur project, dan tautan dokumentasi Next.js."
+  },
+  "eslint.config.mjs": {
+    "summary": "Konfigurasi ESLint (flat config) untuk project Next.js, memakai preset eslint-config-next."
+  },
+  "next.config.ts": {
+    "summary": "Konfigurasi Next.js (App Router) — saat ini masih memakai opsi bawaan create-next-app tanpa kustomisasi khusus."
+  },
+  "package-lock.json": {
+    "summary": "Lockfile npm untuk project dashboard-kpi-divisi; mengunci versi Next.js, React, Tailwind, Recharts, dan seluruh dependency transitifnya."
+  },
+  "package.json": {
+    "summary": "Manifest project 'dashboard-kpi-divisi': dependency Next.js 16 (App Router), React 19, Recharts untuk grafik, Tailwind v4; script dev/build/start/lint standar."
+  },
+  "postcss.config.mjs": {
+    "summary": "Konfigurasi PostCSS yang mengaktifkan plugin @tailwindcss/postcss untuk Tailwind CSS v4."
+  },
+  "src/app/globals.css": {
+    "summary": "Stylesheet global: import Tailwind, definisi token warna background/foreground (light & dark via prefers-color-scheme), dan font-family fallback sistem (bukan Google Fonts, supaya build tidak bergantung jaringan)."
+  },
+  "src/app/isi-angka/[kpiId]/page.tsx": {
+    "summary": "Route halaman Isi Angka Manual per KPI (/isi-angka/[kpiId]). Server component: resolve KPI dari kpiById, 404 kalau tidak ditemukan, lalu render IsiAngkaAccessGate yang menampung form input + riwayat perubahan."
+  },
+  "src/app/layout.tsx": {
+    "summary": "Root layout Next.js App Router. Membungkus seluruh halaman dengan provider global: CurrentUserProvider (simulasi login), DepartmentFilterProvider, PeriodFilterProvider, KpiEntriesProvider, di dalam Suspense boundary (karena dua provider filter memakai useSearchParams untuk sinkronisasi URL)."
+  },
+  "src/app/page.tsx": {
+    "summary": "Halaman utama Dashboard KPI Divisi (route '/'). Server component: ambil daftar departemen dari kpi-data lalu render header dan DashboardView (client component) yang menangani interaktivitas."
+  },
+  "src/components/dashboard/dashboard-view.tsx": {
+    "summary": "Client component inti dashboard: menggabungkan RoleSwitcher, FilterBar, dan daftar DepartmentSection. Menghitung departemen yang tampil dari getVisibleDepartments (hak akses currentUser) diinterseksi dengan selectedDepartmentId (filter departemen)."
+  },
+  "src/components/dashboard/department-section.tsx": {
+    "summary": "Menampilkan satu departemen: judul, DepartmentSummary (agregat), TrendChart (grafik tren KPI departemen), dan daftar RoleSection per role. Memakai useFilteredKpiEntriesGetter untuk menghitung agregat departemen dari entri yang sudah disaring filter periode."
+  },
+  "src/components/dashboard/department-summary.tsx": {
+    "summary": "Kartu agregat ringkasan departemen: rata-rata persentase pencapaian dan jumlah KPI per status (Tercapai/Mendekati/Di Bawah Target), menerima DepartmentSummary dari lib/kpi-metrics."
+  },
+  "src/components/dashboard/entry-history.tsx": {
+    "summary": "Tabel 'Riwayat Perubahan' (audit trail) di halaman Isi Angka: menampilkan seluruh entri KPI (tanggal periode, nilai, catatan, diubah oleh, waktu perubahan) terurut terbaru dulu, dibaca via useKpiEntries (tidak ikut disaring filter periode dashboard)."
+  },
+  "src/components/dashboard/filter-bar.tsx": {
+    "summary": "Kontrol filter periode (bulan ini/bulan lalu/kustom, via usePeriodFilter) dan filter departemen (via useDepartmentFilter, terkunci untuk non-superadmin). Menampilkan rentang tanggal aktif hasil formatPeriodRange."
+  },
+  "src/components/dashboard/isi-angka-access-gate.tsx": {
+    "summary": "Penjaga akses halaman Isi Angka Manual: memakai canFillKpi(currentUser, kpi) untuk menampilkan IsiAngkaForm + EntryHistory hanya bila pengguna berhak (role sama dengan KPI atau superadmin), selain pesan 'tidak berhak' jika tidak."
+  },
+  "src/components/dashboard/isi-angka-form.tsx": {
+    "summary": "Form input nilai KPI (nilai, tanggal, catatan opsional) dengan validasi via validateIsiAngkaForm, submit memanggil useAddKpiEntry() menyertakan changedBy dari currentUser aktif untuk audit trail."
+  },
+  "src/components/dashboard/kpi-card.tsx": {
+    "summary": "Kartu KPI di dashboard: nama, badge status, arah KPI (▲/▼), nilai tercapai/persentase/gap dihitung dari entri terfilter (useFilteredKpiEntries + latestEntryValue + computeAchievementForValue), dan tautan 'Isi Angka' bila canFillKpi mengizinkan."
+  },
+  "src/components/dashboard/role-section.tsx": {
+    "summary": "Mengelompokkan KpiCard per role dalam satu departemen; menampilkan badge 'Segera' untuk role yang belum aktif (mis. KOL Specialist)."
+  },
+  "src/components/dashboard/role-switcher.tsx": {
+    "summary": "Dropdown simulasi login (mock user) di atas dashboard, memilih salah satu dari lib/mock-users untuk mendemokan hak akses berbeda sebelum Supabase Auth (Fase 4)."
+  },
+  "src/components/dashboard/trend-chart.tsx": {
+    "summary": "Grafik tren KPI (Recharts LineChart) dengan toggle mingguan/bulanan, penanda titik ekstrem (ExtremeDot hijau/merah), dan mode 'Bandingkan KPI' yang menumpuk beberapa KPI sebagai persentase pencapaian. Entri dibaca via useEndBoundedKpiEntries(Getter) — hanya dibatasi tanggal akhir filter periode, bukan rentang penuh, supaya jendela tren tetap informatif."
+  },
+  "src/contexts/current-user-context.tsx": {
+    "summary": "React context simulasi sesi login (CurrentUser) di root layout, dipakai lintas halaman (dashboard & Isi Angka) sebelum Supabase Auth Fase 4."
+  },
+  "src/contexts/department-filter-context.tsx": {
+    "summary": "Context filter departemen: state selectedDepartmentId, dikunci ke currentUser.departmentId untuk non-superadmin. Dibaca dari & disinkronkan ke query param 'departemen' di URL halaman dashboard."
+  },
+  "src/contexts/kpi-entries-context.tsx": {
+    "summary": "Context penyimpan entri KPI (KpiEntriesProvider) yang reaktif lintas halaman. Menyediakan useKpiEntries/useAddKpiEntry mentah, serta varian terfilter periode: useFilteredKpiEntries(Getter) (dua batas rentang, untuk Ringkasan) dan useEndBoundedKpiEntries(Getter) (batas atas saja, untuk Grafik)."
+  },
+  "src/contexts/period-filter-context.tsx": {
+    "summary": "Context filter periode (mode bulan-ini/bulan-lalu/kustom + customRange), menghitung `range` aktif via computePeriodRange. Dibaca dari & disinkronkan ke query param 'periode'/'dari'/'sampai' di URL halaman dashboard."
+  },
+  "src/lib/access.ts": {
+    "summary": "Aturan hak akses: getVisibleDepartments (superadmin lihat semua, anggota hanya departemennya) dan canFillKpi (superadmin bebas, anggota hanya boleh isi KPI milik role-nya sendiri, bukan sekadar departemen yang sama)."
+  },
+  "src/lib/kpi-aggregation.ts": {
+    "summary": "Agregasi entri KPI menjadi titik tren mingguan (isoWeekKey) dan bulanan (monthKey): aggregateWeekly/aggregateMonthly menghasilkan TrendPoint berlabel tanggal/bulan singkat dari rata-rata entri per grup."
+  },
+  "src/lib/kpi-data.ts": {
+    "summary": "Data statis Fase 1: daftar departments, roles, dan kpis (19 KPI Digital Marketing & Multimedia sesuai PRD §6) beserta helper rolesByDepartment, kpisByRole, kpisByDepartment, roleById, kpiById."
+  },
+  "src/lib/kpi-entries.ts": {
+    "summary": "Helper entri KPI: latestEntryValue (nilai tercapai terkini, revisi tanggal sama menang), filterEntriesByRange (dua batas, untuk Ringkasan), filterEntriesUpTo (batas atas saja, untuk Grafik)."
+  },
+  "src/lib/kpi-entry-validation.ts": {
+    "summary": "Validasi form Isi Angka Manual: validateIsiAngkaForm memastikan nilai numerik non-negatif (persentase maks 100%) dan tanggal terisi & tidak di masa depan; parseFormValue mengurai input string ke number."
+  },
+  "src/lib/kpi-metrics.ts": {
+    "summary": "Perhitungan inti KPI: achievementPercentage/computeAchievementForValue/computeAchievement (persentase & gap, membalik arah untuk rendah=baik), computeStatus (ambang Tercapai/Mendekati/Di Bawah Target), computeDepartmentSummary (agregat departemen dengan resolver nilai kustom), plus formatter angka/persentase/gap."
+  },
+  "src/lib/mock-entries.ts": {
+    "summary": "Generator entri KPI tiruan (entriesForKpi): ~7 bulan histori per KPI dari MOCK_ENTRIES_REFERENCE_DATE (2026-09-12), deterministik via prng, entri terakhir sama dengan kpi.currentValue."
+  },
+  "src/lib/mock-trend.ts": {
+    "summary": "Wrapper agregasi tren dari entri: weeklyTrend/monthlyTrend (nilai mentah) dan weeklyAchievementTrend/monthlyAchievementTrend (dikonversi ke persentase pencapaian untuk mode perbandingan multi-KPI)."
+  },
+  "src/lib/mock-users.ts": {
+    "summary": "Daftar mock user untuk simulasi login: superadmin (Head of Dept. Marketing & Communication, lihat semua) dan dua anggota per-role (Paid Ads Specialist, Videografer) untuk mendemokan batasan isi angka per role."
+  },
+  "src/lib/period.ts": {
+    "summary": "Perhitungan rentang tanggal filter periode: computePeriodRange (bulan-ini/bulan-lalu/kustom) dan formatPeriodRange untuk label tampilan."
+  },
+  "src/lib/prng.ts": {
+    "summary": "PRNG deterministik (mulberry32) dan hashString, dipakai mock-entries.ts supaya data tiruan konsisten antar-render."
+  },
+  "src/types/kpi.ts": {
+    "summary": "Tipe domain KPI: Department, Role, Kpi (termasuk targetValue/currentValue/valueUnit), dan KpiEntry (entri per tanggal dengan field audit changedBy/changedAt)."
+  },
+  "src/types/user.ts": {
+    "summary": "Tipe CurrentUser untuk simulasi login: role (superadmin/anggota), departmentId, dan roleId (role/jobdesk spesifik yang menentukan hak isi angka KPI)."
+  },
+  "tsconfig.json": {
+    "summary": "Konfigurasi TypeScript project: target/strict mode default create-next-app, alias path '@/*' ke 'src/*'."
+  }
+}
